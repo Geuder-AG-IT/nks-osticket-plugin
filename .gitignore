@@ -1,0 +1,15 @@
+# Backup / scratch
+*.bak
+*.bak-*
+*.orig
+*~
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Local secrets / instance config
+.env
+config.local.php
