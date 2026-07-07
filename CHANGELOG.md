@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-07-07
+
+### Added
+- Thread entries in `tickets.get` now carry an `attachments` array with
+  `fileId`, `name`, `type`, `size`, `inline` and `cid`. `fileId` is the id
+  `attachments.download` expects and `cid` matches the `cid:<...>` markers
+  inline images use in the entry body — attachments were previously
+  undiscoverable, so downloads were impossible without it.
+
 ## [1.0.0] - 2026-07-05
 
 ### Added

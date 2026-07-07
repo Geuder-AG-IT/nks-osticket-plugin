@@ -420,9 +420,48 @@ final class TicketsHandler
             if ($entry->getUserId()) {
                 $item['userId'] = (int)$entry->getUserId();
             }
+            $attachments = $this->entryAttachments($entry);
+            if ($attachments !== []) {
+                $item['attachments'] = $attachments;
+            }
             $entries[] = $item;
         }
         return $entries;
+    }
+
+    /**
+     * Attachment metadata for a thread entry.
+     *
+     * Each item carries the numeric `fileId` that attachments.download needs,
+     * plus name/type/size, the `inline` flag, and the content-id `cid` that
+     * inline images reference in the entry body (the body contains
+     * `cid:<cid>` markers). Without this the API exposed no way to discover an
+     * attachment's file id, so downloads were impossible.
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    private function entryAttachments(\ThreadEntry $entry): array
+    {
+        $out = [];
+        $attachments = $entry->getAttachments();
+        if (!$attachments) {
+            return $out;
+        }
+        foreach ($attachments as $att) {
+            $file = $att->file;
+            if (!$file) {
+                continue;
+            }
+            $out[] = [
+                'fileId' => (int)$file->getId(),
+                'name' => (string)$att->getFilename(),
+                'type' => (string)$file->getType(),
+                'size' => (int)$file->getSize(),
+                'inline' => (bool)$att->inline,
+                'cid' => (string)$file->getKey(),
+            ];
+        }
+        return $out;
     }
 
     /**
