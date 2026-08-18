@@ -19,7 +19,7 @@ require_once __DIR__ . '/Handlers/AttachmentsHandler.php';
 
 final class Kernel
 {
-    public const VERSION = '1.0.0';
+    public const VERSION = '1.2.0';
 
     /**
      * Route table: action => [permission columns (OR), callable factory].

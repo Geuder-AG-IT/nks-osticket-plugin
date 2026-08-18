@@ -5,6 +5,20 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-08-18
+
+### Fixed
+- `tickets.reply` now actually emails the customer. Without `reply-to` in the
+  vars, `Ticket::getRecipients()` returns null and osTicket stores the reply in
+  the thread but never sends it. Recipients default to `all`, overridable with
+  the new `replyTo` parameter (`all` / `user` / `collabs`).
+
+### Added
+- Writes act as a real agent instead of posting anonymously. `tickets.reply`
+  and the note in `tickets.update` resolve a `Staff` (new optional `staffId`
+  parameter, default `1`) and publish it as `$thisstaff`, so osTicket fills in
+  the poster name, the agent signature, the reply from-name and the auto-claim.
+
 ## [1.1.0] - 2026-07-07
 
 ### Added

@@ -26,6 +26,13 @@ final class TicketsHandler
         'staff__firstname', 'staff__lastname', 'team__name', 'sla__name',
     ];
 
+    /**
+     * Agent the API posts as. osTicket derives the poster name, the signature,
+     * the from-name and the auto-claim from it; without an agent the entry is
+     * stored anonymously.
+     */
+    private const DEFAULT_STAFF_ID = 1;
+
     /** @var array<int,string>|null Cached priority id => description map. */
     private ?array $priorityMap = null;
 
@@ -232,7 +239,7 @@ final class TicketsHandler
                 'title' => (string)($params['noteTitle'] ?? 'API note'),
             ];
             $errors = [];
-            $ticket->postNote($vars, $errors, null, false);
+            $ticket->postNote($vars, $errors, $this->actingStaff($params), false);
             $changed[] = 'note';
         }
 
@@ -256,9 +263,15 @@ final class TicketsHandler
             throw new ApiException('reply requires a non-empty "response"', 400);
         }
 
+        $staff = $this->actingStaff($params);
+
         $vars = [
             'response' => $response,
             'title' => (string)($params['title'] ?? ''),
+            // Without reply-to, Ticket::getRecipients() returns null and the
+            // reply is stored in the thread but never mailed to the customer.
+            'reply-to' => (string)($params['replyTo'] ?? 'all'),
+            'signature' => $staff ? 'mine' : 'dept',
         ];
         $errors = [];
         $entry = $ticket->postReply($vars, $errors, (bool)($params['alert'] ?? true));
@@ -284,6 +297,23 @@ final class TicketsHandler
     }
 
     // --------------------------------------------------------------- helpers
+
+    /**
+     * Resolve the acting agent and publish it where osTicket looks for it -
+     * core reads $thisstaff straight from the global scope.
+     *
+     * @param array<string,mixed> $params
+     */
+    private function actingStaff(array $params): ?\Staff
+    {
+        $id = (int)($params['staffId'] ?? self::DEFAULT_STAFF_ID);
+        $staff = $id > 0 ? \Staff::lookup($id) : null;
+        if ($staff) {
+            $GLOBALS['thisstaff'] = $staff;
+        }
+
+        return $staff;
+    }
 
     /**
      * Run a values() projection with sort + pagination and map to output rows.
