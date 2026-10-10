@@ -5,16 +5,16 @@
 [![osTicket](https://img.shields.io/badge/osTicket-1.18-0E6EB8.svg)](https://osticket.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-> A clean, single-endpoint JSON API for [osTicket](https://osticket.com/) — built for integrations and AI agents. One web entry, one API key model, fast reads.
+> A single-endpoint JSON API for [osTicket](https://osticket.com/) that integrations and AI agents call with osTicket's own API keys.
 
-It exposes the full ticket surface (list, search, get, create, update, reply, delete), statistics, statuses, parent/child subtickets and attachment download through a single JSON-RPC endpoint. The companion [NKS osTicket MCP](https://github.com/nks-hub/nks-osticket-mcp) server makes it available to AI agents over the Model Context Protocol.
+It covers tickets (list, search, get, create, update, reply, delete), statistics, statuses, parent/child subtickets and attachment download. The companion [NKS osTicket MCP](https://github.com/nks-hub/nks-osticket-mcp) server makes it available to AI agents over the Model Context Protocol.
 
 ---
 
 ## Features
 
-- 🎫 **Full ticket surface** - List, search, get, create, update, reply and delete tickets through one endpoint
-- ⚡ **Fast reads** - Read paths use ORM `->values()` projections instead of hydrating full `Ticket` models, so lists and searches stay fast on large ticket tables
+- 🎫 **Tickets** - List, search, get, create, update, reply and delete tickets through one endpoint
+- ⚡ **Flat reads** - Lists and searches use ORM `->values()` projections instead of hydrating full `Ticket` models
 - 🔑 **Native API keys** - Authenticates against osTicket's own API keys with source-IP binding and granular per-action permissions
 - 👤 **Writes as a real agent** - Replies and notes are posted as an osTicket agent (`staffId`), so the poster name, signature, from-name and auto-claim are filled in
 - 📧 **Emailed replies** - `tickets.reply` sends the reply to the customer, with selectable recipients (`replyTo`)
@@ -40,8 +40,8 @@ OSTICKET_WEB=/path/to/osticket/upload ./deploy.sh
 
 `OSTICKET_WEB` must point at the osTicket web root (the directory that contains `main.inc.php` and the `api/` folder). This installs:
 
-- `include/plugins/nks-osticket-api/` — plugin code
-- `api/nks-osticket.php` — the single web entry
+- `include/plugins/nks-osticket-api/`: plugin code
+- `api/nks-osticket.php`: the single web entry
 - a bypass rule in `api/.htaccess` so osTicket's dispatcher doesn't intercept it
 
 Registering/activating the plugin in the admin panel is optional; the API works as soon as the files are in place.
@@ -95,13 +95,13 @@ GET /api/nks-osticket.php?action=tickets.list&status=open&limit=5
 
 ## Authentication
 
-Uses osTicket's native API keys (**Admin Panel → Manage → API Keys**). Each key is bound to a source IP and carries granular permission columns (`can_read_tickets`, `can_search_tickets`, `can_create_tickets`, `can_update_tickets`, `can_reply_tickets`, `can_delete_tickets`, `can_read_stats`, `can_manage_subtickets`). On an IP mismatch the API returns the IP it observed to make key setup painless.
+Uses osTicket's native API keys (**Admin Panel → Manage → API Keys**). Each key is bound to a source IP and carries granular permission columns (`can_read_tickets`, `can_search_tickets`, `can_create_tickets`, `can_update_tickets`, `can_reply_tickets`, `can_delete_tickets`, `can_read_stats`, `can_manage_subtickets`). On an IP mismatch the API returns the IP it observed, so the key can be bound to it.
 
-## Why
+## How it works
 
-osTicket has no first-class REST API for automation. This plugin adds one without touching core: a single web entry boots osTicket, authenticates against osTicket's own API keys, and dispatches a flat `action` string to a handler.
+A single web entry boots osTicket, authenticates against osTicket's own API keys and dispatches a flat `action` string to a handler. osTicket core files are not modified.
 
-Read paths use the ORM's `->values()` projection instead of hydrating full `Ticket` models — model hydration through osTicket's auto-joined QuerySet is pathologically slow on large ticket tables, so lists and searches stay fast. Writes go through the documented Ticket API so business rules (threads, alerts, logging) still fire.
+Read paths use the ORM's `->values()` projection instead of hydrating full `Ticket` models. On osTicket 1.18, hydration through the auto-joined QuerySet runs tens of thousands of introspection queries per row. Writes go through the documented Ticket API, so threads, alerts and logging still run.
 
 ## Development
 
