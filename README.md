@@ -1,6 +1,6 @@
 # NKS osTicket API
 
-[![Version](https://img.shields.io/badge/version-1.2.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.2.1-orange.svg)](CHANGELOG.md)
 [![PHP](https://img.shields.io/badge/PHP-8.0+-777BB4.svg?logo=php&logoColor=white)](#requirements)
 [![osTicket](https://img.shields.io/badge/osTicket-1.18-0E6EB8.svg)](https://osticket.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -96,6 +96,18 @@ GET /api/nks-osticket.php?action=tickets.list&status=open&limit=5
 ## Authentication
 
 Uses osTicket's native API keys (**Admin Panel → Manage → API Keys**). Each key is bound to a source IP and carries granular permission columns (`can_read_tickets`, `can_search_tickets`, `can_create_tickets`, `can_update_tickets`, `can_reply_tickets`, `can_delete_tickets`, `can_read_stats`, `can_manage_subtickets`). On an IP mismatch the API returns the IP it observed, so the key can be bound to it.
+
+### Granting permissions
+
+Stock osTicket has only `can_create_tickets` and `can_exec_cron`. The API adds the other columns to `ost_api_key` on the first authenticated request, all set to `0`. The admin panel does not show them, so grant them in the database:
+
+```sql
+UPDATE ost_api_key
+SET can_read_tickets = 1, can_search_tickets = 1, can_read_stats = 1
+WHERE id = 2;  -- the key id, also returned by meta.ping as keyId
+```
+
+A `403` response names the missing permission and includes the matching `UPDATE` statement in `error.hint`. If the database user cannot alter the table, the API answers `500` with the `ALTER TABLE` statement to run by hand.
 
 ## How it works
 

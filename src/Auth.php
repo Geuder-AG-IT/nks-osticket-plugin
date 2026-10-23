@@ -13,6 +13,17 @@ namespace NksOsticket;
 
 final class Auth
 {
+    /**
+     * Permission columns this API adds to `ost_api_key`. Stock osTicket ships
+     * only `can_create_tickets` and `can_exec_cron`, so the rest are created
+     * on first use (default 0 = not granted).
+     */
+    public const PERMISSION_COLUMNS = [
+        'can_read_tickets', 'can_search_tickets', 'can_create_tickets',
+        'can_update_tickets', 'can_reply_tickets', 'can_delete_tickets',
+        'can_read_stats', 'can_manage_subtickets',
+    ];
+
     /** @var array<string,mixed> Raw api key row. */
     private array $row;
 
@@ -52,6 +63,13 @@ final class Auth
             Http::fail(401, 'Invalid or inactive API key');
         }
 
+        // SELECT * returns every column, so a missing key means the column
+        // does not exist yet; adding it costs nothing once the schema is done.
+        $missing = array_diff(self::PERMISSION_COLUMNS, array_keys($row));
+        if ($missing) {
+            self::addPermissionColumns($table, $missing);
+        }
+
         // IP binding: osTicket keys are pinned to a source IP. Surface the seen
         // IP on mismatch so operators can configure the key without guessing.
         if (!empty($row['ipaddr']) && $row['ipaddr'] !== $ip) {
@@ -83,6 +101,35 @@ final class Auth
                 return;
             }
         }
-        Http::fail(403, 'API key lacks permission: ' . implode(' | ', $permissionColumns));
+        Http::fail(403, 'API key lacks permission: ' . implode(' | ', $permissionColumns), [
+            'hint' => sprintf(
+                'Grant it in the database: UPDATE %s SET %s = 1 WHERE id = %d',
+                defined('API_KEY_TABLE') ? API_KEY_TABLE : 'ost_api_key',
+                $permissionColumns[0],
+                $this->keyId()
+            ),
+        ]);
+    }
+
+    /**
+     * Add the permission columns stock osTicket lacks. Fails with the exact
+     * SQL when the database user may not alter the table.
+     *
+     * @param string[] $columns
+     */
+    private static function addPermissionColumns(string $table, array $columns): void
+    {
+        foreach ($columns as $col) {
+            $sql = sprintf(
+                'ALTER TABLE %s ADD COLUMN `%s` tinyint(1) unsigned NOT NULL DEFAULT 0',
+                $table,
+                $col
+            );
+            if (!\db_query($sql)) {
+                Http::fail(500, 'Missing permission column ' . $col . ' and the database user cannot add it', [
+                    'sql' => $sql,
+                ]);
+            }
+        }
     }
 }

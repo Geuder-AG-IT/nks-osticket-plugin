@@ -9,7 +9,7 @@
 
 return array(
     'id'          => 'nks:osticket-api',
-    'version'     => '1.2.0',
+    'version'     => '1.2.1',
     'name'        => 'NKS osTicket API',
     'author'      => 'NKS',
     'description' => 'Clean JSON API over osTicket — tickets (list/search/get/create/update/reply/delete), stats, statuses, subtickets and attachments — designed for integrations and AI agents.',

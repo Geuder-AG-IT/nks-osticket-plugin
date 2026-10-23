@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.2.1] - 2026-10-23
+
+### Fixed
+- Every action except `meta.ping` returned `403 API key lacks permission` on a
+  stock osTicket install. The permission columns (`can_read_tickets`,
+  `can_search_tickets`, …) were never created, because stock `ost_api_key`
+  has only `can_create_tickets` and `can_exec_cron`. They are now added on the
+  first authenticated request, defaulting to `0`.
+
+### Added
+- A `403` response carries `error.hint` with the `UPDATE` statement that grants
+  the missing permission, and the README documents how to grant permissions.
+
 ## [1.2.0] - 2026-08-18
 
 ### Fixed
