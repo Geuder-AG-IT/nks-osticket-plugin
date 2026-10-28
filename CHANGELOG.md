@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-10-28
+
+### Added
+- `tickets.reply` accepts `attachments`, a list of `{name, type, data}` with
+  base64 data. The files are stored on the reply entry and mailed with it.
+  Each file is limited by osTicket's `max_file_size`; a larger one returns
+  `413`, a missing name or invalid base64 returns `400`.
+- The `tickets.reply` response includes `attachments`, the number of files
+  stored on the new entry.
+
 ## [1.2.1] - 2026-10-23
 
 ### Fixed

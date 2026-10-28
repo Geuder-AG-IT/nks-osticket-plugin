@@ -273,13 +273,56 @@ final class TicketsHandler
             'reply-to' => (string)($params['replyTo'] ?? 'all'),
             'signature' => $staff ? 'mine' : 'dept',
         ];
+        if (isset($params['attachments'])) {
+            $vars['attachments'] = $this->decodeAttachments($params['attachments']);
+        }
         $errors = [];
         $entry = $ticket->postReply($vars, $errors, (bool)($params['alert'] ?? true));
         if (!$entry) {
             throw new ApiException('Reply failed: ' . $this->flattenErrors($errors), 422);
         }
 
-        return ['number' => $ticket->getNumber(), 'posted' => true];
+        return [
+            'number' => $ticket->getNumber(),
+            'posted' => true,
+            'attachments' => $entry->getAttachments()->count(),
+        ];
+    }
+
+    /**
+     * Turns API attachments `{name, type?, data}` (data base64) into the file
+     * arrays ThreadEntry::create() stores; postReply() then mails them along
+     * when "Email attachments" is enabled. The size cap is osTicket's own
+     * max_file_size setting.
+     *
+     * @param mixed $attachments
+     * @return array<int,array{name:string,type:string,data:string}>
+     */
+    private function decodeAttachments($attachments): array
+    {
+        global $cfg;
+
+        if (!is_array($attachments) || $attachments !== array_values($attachments)) {
+            throw new ApiException('"attachments" must be a list of {name, type, data}', 400);
+        }
+        $maxBytes = (int)$cfg->getMaxFileSize();
+        $files = [];
+        foreach ($attachments as $i => $att) {
+            $name = is_array($att) ? basename((string)($att['name'] ?? '')) : '';
+            $data = is_array($att) ? base64_decode((string)($att['data'] ?? ''), true) : false;
+            if ($name === '' || $data === false || $data === '') {
+                throw new ApiException("attachments[$i] needs a file name and base64 data", 400);
+            }
+            if ($maxBytes > 0 && strlen($data) > $maxBytes) {
+                throw new ApiException("attachments[$i] is larger than osTicket's max_file_size ($maxBytes bytes)", 413);
+            }
+            $files[] = [
+                'name' => $name,
+                'type' => (string)($att['type'] ?? '') ?: 'application/octet-stream',
+                'data' => $data,
+            ];
+        }
+        return $files;
     }
 
     /**

@@ -1,6 +1,6 @@
 # NKS osTicket API
 
-[![Version](https://img.shields.io/badge/version-1.2.1-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.3.0-orange.svg)](CHANGELOG.md)
 [![PHP](https://img.shields.io/badge/PHP-8.0+-777BB4.svg?logo=php&logoColor=white)](#requirements)
 [![osTicket](https://img.shields.io/badge/osTicket-1.18-0E6EB8.svg)](https://osticket.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -19,7 +19,7 @@ It covers tickets (list, search, get, create, update, reply, delete), statistics
 - 👤 **Writes as a real agent** - Replies and notes are posted as an osTicket agent (`staffId`), so the poster name, signature, from-name and auto-claim are filled in
 - 📧 **Emailed replies** - `tickets.reply` sends the reply to the customer, with selectable recipients (`replyTo`)
 - 🌳 **Subtickets** - Native parent/child tickets via `ticket_pid`, no third-party plugin
-- 📎 **Attachments** - Thread entries list their attachments (`fileId`, `cid`) and `attachments.download` fetches them
+- 📎 **Attachments** - Replies can carry files, thread entries list their attachments (`fileId`, `cid`) and `attachments.download` fetches them
 - 🧩 **No core changes** - A single web entry boots osTicket and dispatches a flat `action` string to a handler
 
 ## Requirements
@@ -81,7 +81,7 @@ GET /api/nks-osticket.php?action=tickets.list&status=open&limit=5
 | `tickets.statuses` | – | read stats / read |
 | `tickets.create` | `subject`, `message`, `name?`, `email?`, `topicId?`, `priority?` | create |
 | `tickets.update` | `number`, `status?`, `dueDate?`, `topicId?`, `note?`, `staffId?` | update |
-| `tickets.reply` | `number`, `response`, `title?`, `alert?`, `staffId?`, `replyTo?` | reply |
+| `tickets.reply` | `number`, `response`, `title?`, `alert?`, `staffId?`, `replyTo?`, `attachments?` | reply |
 | `tickets.delete` | `number` | delete |
 | `subtickets.link` | `parent`, `child` | manage subtickets |
 | `subtickets.unlink` | `child` | manage subtickets |
@@ -90,6 +90,8 @@ GET /api/nks-osticket.php?action=tickets.list&status=open&limit=5
 | `attachments.download` | `fileId` | read |
 
 `sort` is one of `created` (default, newest first), `updated`, `number`. `status` accepts canonical states (`open`, `closed`, `resolved`, `archived`) or a numeric status id. `staffId` is the agent a reply or note is posted as (default `1`). `replyTo` is `all` (default), `user` or `collabs`.
+
+`attachments` on `tickets.reply` is a list of `{ "name": "screenshot.jpg", "type": "image/jpeg", "data": "<base64>" }`. The files are stored on the reply and sent with its email when **Admin Panel → Settings → Emails → Attachments** is on. Each file is capped by osTicket's maximum file size setting; a larger one is rejected with `413`. The response reports how many attachments were stored.
 
 `tickets.get` returns an `attachments` array on each thread entry (`fileId`, `name`, `type`, `size`, `inline`, `cid`). `fileId` is the id `attachments.download` expects, and `cid` matches the `cid:<...>` markers inline images use in the entry body.
 
