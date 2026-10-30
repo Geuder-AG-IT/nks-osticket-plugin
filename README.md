@@ -26,7 +26,7 @@ It covers tickets (list, search, get, create, update, reply, delete), statistics
 
 - osTicket (developed against osTicket 1.18)
 - PHP 8.0 or later
-- Shell access to the osTicket web root and bash for `deploy.sh`
+- Shell access to the osTicket web root and bash for `deploy.sh` (Linux/Apache) or PowerShell 5.1 for `deploy.ps1` (Windows/IIS)
 - An osTicket API key (Admin Panel → Manage → API Keys) with the permissions your integration needs
 
 ## Installation
@@ -43,6 +43,17 @@ OSTICKET_WEB=/path/to/osticket/upload ./deploy.sh
 - `include/plugins/nks-osticket-api/`: plugin code
 - `api/nks-osticket.php`: the single web entry
 - a bypass rule in `api/.htaccess` so osTicket's dispatcher doesn't intercept it
+
+### Windows / IIS
+
+In an elevated PowerShell on the web server:
+
+```powershell
+.\deploy.ps1 -HostName support.example.com -PingUrl https://support.example.com/api/nks-osticket.php -ApiKey <key> -RecycleAppPool
+```
+
+`-HostName` finds the osTicket web root through the IIS binding (or pass `-WebRoot`). The script backs up the current plugin to `%ProgramData%
+ks-osticket-apiackup\`, copies the files, recycles the app pool so OPcache picks up the new code, and checks the endpoint with `meta.ping`. IIS serves `api/nks-osticket.php` directly; no `.htaccess` rule is needed. If `api\web.config` rewrites every request to `http.php`, the script prints the rule to add.
 
 Registering/activating the plugin in the admin panel is optional; the API works as soon as the files are in place.
 

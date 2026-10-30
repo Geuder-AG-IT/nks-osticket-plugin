@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   Inactive or vacationing assignees return `422`; an assigned ticket returns
   `409` unless `reassign` is `true`. Needs the new `can_assign_tickets`
   permission column, created on first use like the others.
+- `deploy.ps1` installs the plugin on Windows/IIS: finds the web root via the
+  IIS binding, backs up the current files, recycles the app pool and checks
+  the endpoint with `meta.ping`.
 
 ## [1.3.0] - 2026-10-28
 
