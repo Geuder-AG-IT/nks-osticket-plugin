@@ -52,8 +52,7 @@ In an elevated PowerShell on the web server:
 .\deploy.ps1 -HostName support.example.com -PingUrl https://support.example.com/api/nks-osticket.php -ApiKey <key> -RecycleAppPool
 ```
 
-`-HostName` finds the osTicket web root through the IIS binding (or pass `-WebRoot`). The script backs up the current plugin to `%ProgramData%
-ks-osticket-apiackup\`, copies the files, recycles the app pool so OPcache picks up the new code, and checks the endpoint with `meta.ping`. IIS serves `api/nks-osticket.php` directly; no `.htaccess` rule is needed. If `api\web.config` rewrites every request to `http.php`, the script prints the rule to add.
+`-HostName` finds the osTicket web root through the IIS binding (or pass `-WebRoot`). The script backs up the current plugin to `%ProgramData%\nks-osticket-api\backup\`, copies the files, recycles the app pool so OPcache picks up the new code, and checks the endpoint with `meta.ping`. IIS serves `api/nks-osticket.php` directly; no `.htaccess` rule is needed. If `api\web.config` rewrites every request to `http.php`, the script prints the rule to add.
 
 Registering/activating the plugin in the admin panel is optional; the API works as soon as the files are in place.
 
