@@ -1,5 +1,4 @@
-#Requires -Version 5.1
-#Requires -RunAsAdministrator
+#Requires -Version 3.0
 <#
 .SYNOPSIS
     Deploy the NKS osTicket API plugin into an osTicket installation on Windows / IIS.
@@ -41,6 +40,10 @@ param(
 $ErrorActionPreference = 'Stop'
 $src = $PSScriptRoot
 $appPool = $null
+
+# Works on Windows PowerShell 3.0+ (older servers); hence no #Requires -RunAsAdministrator (4.0+)
+$principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { throw 'Run in an elevated PowerShell (Administrator).' }
 
 # --- web root ----------------------------------------------------------------
 if (-not $WebRoot) {

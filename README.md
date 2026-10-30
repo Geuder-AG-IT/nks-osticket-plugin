@@ -26,7 +26,7 @@ It covers tickets (list, search, get, create, update, reply, delete), statistics
 
 - osTicket (developed against osTicket 1.18)
 - PHP 8.0 or later
-- Shell access to the osTicket web root and bash for `deploy.sh` (Linux/Apache) or PowerShell 5.1 for `deploy.ps1` (Windows/IIS)
+- Shell access to the osTicket web root and bash for `deploy.sh` (Linux/Apache) or Windows PowerShell 3.0+ for `deploy.ps1` (Windows/IIS)
 - An osTicket API key (Admin Panel → Manage → API Keys) with the permissions your integration needs
 
 ## Installation
