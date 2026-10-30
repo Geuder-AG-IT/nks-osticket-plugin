@@ -21,7 +21,7 @@ final class Auth
     public const PERMISSION_COLUMNS = [
         'can_read_tickets', 'can_search_tickets', 'can_create_tickets',
         'can_update_tickets', 'can_reply_tickets', 'can_delete_tickets',
-        'can_read_stats', 'can_manage_subtickets',
+        'can_read_stats', 'can_manage_subtickets', 'can_assign_tickets',
     ];
 
     /** @var array<string,mixed> Raw api key row. */

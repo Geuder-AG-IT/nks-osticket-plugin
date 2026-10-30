@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] - 2026-10-30
+
+### Added
+- `tickets.assign` assigns a ticket to an agent (`assigneeId`) via
+  `Ticket::assignToStaff()`, so the `assigned` event, the optional internal
+  note (`note`) and the assignment alert (`alert`) work as in the staff panel.
+  Inactive or vacationing assignees return `422`; an assigned ticket returns
+  `409` unless `reassign` is `true`. Needs the new `can_assign_tickets`
+  permission column, created on first use like the others.
+
 ## [1.3.0] - 2026-10-28
 
 ### Added
