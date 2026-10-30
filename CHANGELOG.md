@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   Inactive or vacationing assignees return `422`; an assigned ticket returns
   `409` unless `reassign` is `true`. Needs the new `can_assign_tickets`
   permission column, created on first use like the others.
+- API key addresses accept `*` (any), wildcards (`172.16.4.*`), IPv4 CIDR
+  (`172.16.0.0/16`) and `regex:/.../` besides an exact IP.
 - `deploy.ps1` installs the plugin on Windows/IIS: finds the web root via the
   IIS binding, backs up the current files, recycles the app pool and checks
   the endpoint with `meta.ping`.

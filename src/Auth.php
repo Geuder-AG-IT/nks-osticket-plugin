@@ -80,15 +80,18 @@ final class Auth
     }
 
     /**
-     * Whether the key's bound address admits the caller. Empty, "0.0.0.0" and
-     * "*" admit any address (wildcard keys); "*" inside an address
-     * ("172.16.*") and IPv4 CIDR ("172.16.0.0/16") admit a range.
+     * Whether the key's bound address admits the caller. Empty and "*" admit
+     * any address (wildcard keys); "*" inside an address ("172.16.4.*"),
+     * IPv4 CIDR ("172.16.0.0/16") and "regex:/.../" admit a range.
      */
     public static function ipAllowed(string $allowed, string $ip): bool
     {
         $allowed = trim($allowed);
-        if ($allowed === '' || $allowed === '0.0.0.0' || $allowed === '*' || $allowed === $ip) {
+        if ($allowed === '' || $allowed === '*' || $allowed === $ip) {
             return true;
+        }
+        if (strncmp($allowed, 'regex:', 6) === 0) {
+            return @preg_match(substr($allowed, 6), $ip) === 1;
         }
         if (strpos($allowed, '*') !== false) {
             $re = '/^' . str_replace('\*', '[0-9A-Fa-f:.]*', preg_quote($allowed, '/')) . '$/';
